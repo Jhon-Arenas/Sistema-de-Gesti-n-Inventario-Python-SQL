@@ -61,7 +61,7 @@ if mi_conexion:
                     print("-" * 80)
                 
             elif opcion == '2':
-                if rol == 'Administrador':
+                if rol == ['Administrador', 'Inventario']:
                     print("\n--- AGREGAR PRODUCTO ---")
                     nombre_producto = input("Nombre del producto: ")
                     try:
@@ -104,7 +104,7 @@ if mi_conexion:
                     print("Acceso denegado. Solo los administradores pueden eliminar productos.")
 
             elif opcion == '4':
-                if rol == 'Administrador':
+                if rol == ['Administrador', 'Inventario']:
                     print("\n--- ACTUALIZAR PRODUCTO ---")
                     try:
                         id_producto = input("ID del producto a actualizar: ")

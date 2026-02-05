@@ -1,7 +1,4 @@
 # Sistema-de-Gestion-Inventario-Python-SQL
-<<<<<<< HEAD
-Sistema CRUD para el control de inventario y ventas, con roles de usuario desarrollado en Python y SQL server
-=======
 Sistema CRUD para el control de inventario y ventas, con roles de usuario desarrollado en Python y SSQL server
 
 # 📦 Sistema de Control de Inventario y Gestión de Ventas
@@ -24,4 +21,3 @@ El sistema valida el nivel de acceso al iniciar sesión:
 ## 📊 Lógica de Base de Datos
 - **Restricciones (Constraints):** Control de stock mínimo para evitar valores negativos.
 - **Consultas Dinámicas:** Uso de `LIKE` para buscadores inteligentes de productos.
->>>>>>> 7e84035 (Mejora de documentación: Detalles técnicos y roles)
