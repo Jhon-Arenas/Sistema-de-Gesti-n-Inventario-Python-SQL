@@ -162,8 +162,10 @@ if mi_conexion:
 
             elif opcion == '6':
                 print("\n--- BUSCAR PRODUCTO ---")
-                termino_busqueda = input("Ingrese el nombre o parte del nombre del producto: ")
-                cursor.execute('SELECT * FROM Productos WHERE Nombre LIKE ?', ('%' + termino_busqueda + '%',))
+                termino = input("Que buscas?: ").strip()
+                query = """ SELECT * FROM Productos WHERE CAST(ID_Producto AS VARCHAR) = ? OR Nombre LIKE ? OR Caracteristica LIKE ?"""
+                like_termino = f"%{termino}%"
+                cursor.execute(query, (termino, like_termino, like_termino))
                 resultados = cursor.fetchall()
 
                 if resultados:
