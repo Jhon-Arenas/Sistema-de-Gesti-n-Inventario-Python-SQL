@@ -21,4 +21,3 @@ El sistema valida el nivel de acceso al iniciar sesión:
 ## 📊 Lógica de Base de Datos
 - **Restricciones (Constraints):** Control de stock mínimo para evitar valores negativos.
 - **Consultas Dinámicas:** Uso de `LIKE` para buscadores inteligentes de productos.
->>>>>>> 7e84035 (Mejora de documentación: Detalles técnicos y roles)
