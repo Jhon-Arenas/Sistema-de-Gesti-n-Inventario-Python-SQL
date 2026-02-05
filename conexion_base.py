@@ -2,7 +2,7 @@ import pyodbc
 
 def conectar_bd():
     try:
-        servidor = r'JHON\SQLEXPRESS'  # Cambia esto por tu servidor SQL
+        servidor = r'localhost\SQLEXPRESS'  # Cambia esto por tu servidor SQL
         base_datos = 'Emprendimiento'  # Cambia esto por el nombre de tu base de datos
 
         conexion = pyodbc.connect(
