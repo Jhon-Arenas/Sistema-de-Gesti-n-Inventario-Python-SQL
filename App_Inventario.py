@@ -198,12 +198,12 @@ if mi_conexion:
                     print("\n" + "=" * 100)
                     print("\n--- LISTA DE VENTAS ---")
                     print("\n" + "=" * 100)
-                    print(f"{'ID Venta':<10} | {'ID Producto':<12} | {'Cantidad Vendida':<18} | {'Cliente':<20} | {'Método Pago':<15} | {'Total Precio':<15} | {'Estado Pago':<12}")
+                    print(f"{'ID':<6} | {'ID Prod':<11} | {'Cliente':<15} | {'Cant':<8} | {'Total':<10} | {'Método':<15} | {'Estado Pago':<10}")
                     print("-" * 100)
                     
                     for v in ventas:
                         v_limpio = [str(dato) if dato is not None else '---' for dato in v]
-                        print(f"{v_limpio[0]:<10} | {v_limpio[1]:<12} | {v_limpio[2]:<18} | {v_limpio[3]:<20} | {v_limpio[4]:<15} | {v_limpio[5]:<15} | {v_limpio[6]:<12}")
+                        print(f"{v_limpio[0]:<6} | {v_limpio[1]:<11} | {v_limpio[2]:<15} | {v_limpio[3]:<8} | {v_limpio[4]:<10} | {v_limpio[5]:<15} | {v_limpio[6]:<10}")
                         print("-" * 100)
 
                 else:
