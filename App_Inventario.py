@@ -1,5 +1,6 @@
 from conexion_base import conectar_bd
-
+import sqlite3
+import pandas as pd
 mi_conexion = conectar_bd()
 
 if mi_conexion:
@@ -35,7 +36,9 @@ if mi_conexion:
             print("5. Ventas")
             print("6. Buscar producto")
             print("7. Historial de ventas")
-            print("8. Salir")
+            print("8. Agregar usuario")
+            print("9. Generar reporte de inventario")
+            print("10. Salir")
             opcion = input("Seleccione una opción: ")
 
             if opcion == '1':
@@ -210,6 +213,35 @@ if mi_conexion:
                     print("Acceso denegado. Solo administradores e inventario pueden ver el historial de ventas.")
 
             elif opcion == '8':
+                if rol == 'Administrador':
+                    print("Agregar nuevo usuario...")
+                    nombre_usuario = input("Nombre de usuario: ")
+                    contraseña_usuario = input("Contraseña: ")
+                    rol_usuario = input("Rol (Administrador/Vendedor/Inventario): ")
+                    if rol_usuario not in ['Administrador', 'Vendedor', 'Inventario']:
+                        print("Rol no válido. Usuario no creado.")
+                    else:
+                        try:
+                            cursor.execute('INSERT INTO Usuarios (Nombre_Usuario, Contraseña, Rol) VALUES (?, ?, ?)',
+                                           (nombre_usuario, contraseña_usuario, rol_usuario))
+                            mi_conexion.commit()
+                            print("Usuario creado exitosamente.")
+                        except sqlite3.IntegrityError:
+                            print("Error: El nombre de usuario ya existe. Intente con otro.")
+                else:
+                    print("Acceso denegado. Solo los administradores pueden agregar usuarios.")
+
+            elif opcion == '9':
+                if rol in ['Administrador', 'Inventario']:
+                    print("Reporte de inventario en Excel...")
+                    cursor.execute('SELECT * FROM Productos')
+                    df_productos = pd.read_sql_query('SELECT * FROM Productos', mi_conexion)
+                    df_productos.to_excel('reporte_inventario.xlsx', index=False)
+                    print("Reporte generado exitosamente como 'reporte_inventario.xlsx'.")
+                else:
+                    print("Opción no válida. Solo los Administradores, Inventaristas pueden generar reportes de inventario.")
+
+            elif opcion == '10':
                 print("Saliendo del sistema. ¡Hasta luego!")
                 continuar = False
 

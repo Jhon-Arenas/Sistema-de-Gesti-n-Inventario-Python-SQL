@@ -1,22 +1,11 @@
 import pyodbc
+import sqlite3 # Importamos la librería nativa de Python
 
 def conectar_bd():
     try:
-        servidor = r'localhost\SQLEXPRESS'  # Cambia esto por tu servidor SQL
-        base_datos = 'Emprendimiento'  # Cambia esto por el nombre de tu base de datos
-
-        conexion = pyodbc.connect(
-            'DRIVER={SQL Server};'
-            f'SERVER={servidor};'
-            f'DATABASE={base_datos};'
-            'Trusted_Connection=yes;'
-        )
-        print("------------------------------------")
-        print("Conexión exitosa a la base de datos.")
-        print("------------------------------------")
+        # Esto buscará (o creará) el archivo en la misma carpeta que el .exe
+        conexion = sqlite3.connect("inventario.db") 
         return conexion
-    except pyodbc.Error as e:
-        print("------------------------------------")
-        print("Error al conectar a la base de datos:", e)
-        print("------------------------------------")
+    except Exception as e:
+        print(f"Error al conectar con SQLite: {e}")
         return None
