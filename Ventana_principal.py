@@ -59,10 +59,10 @@ class VentanaPrincipal(ctk.CTk):
         self.btn_ventas = ctk.CTkButton(self.sidebar_frame, text="💰 Ventas", command=self.mostrar_ventas, fg_color="#28a745")
         self.btn_ventas.pack(pady=10, padx=20)
 
-        self.btn_cargar_productos = ctk.CTkButton(self.sidebar_frame, text="📈 Cargar Productos", command=self.cargar_productos)
+        self.btn_cargar_productos = ctk.CTkButton(self.sidebar_frame, text="📈 Cargar Productos", command=self.cargar_productos, fg_color= "#0A98A0")
         self.btn_cargar_productos.pack(pady=10, padx=20)
 
-        self.btn_reportes = ctk.CTkButton(self.sidebar_frame, text="📊 Reportes", command=self.mostrar_reportes)
+        self.btn_reportes = ctk.CTkButton(self.sidebar_frame, text="📊 Reportes", command=self.mostrar_reportes, fg_color="#456E54")
         self.btn_reportes.pack(pady=10, padx=20)
 
         # El botón de cerrar sesión lo dejamos al final para que siempre esté visible, y con un color rojo para destacarlo
