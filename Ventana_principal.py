@@ -9,7 +9,7 @@ from Seccion_reportes import SeccionReportes
 from Seccion_reposicion import VentanaReposicionStock
 from Seccion_productos import SeccionProductos
 from Seccion_ventas import SeccionVentas
-from Seccion_cargarproductos import SeccionCargarProductos
+from Seccion_cargarproductos import SeccionInventario
 
 class VentanaSalidaSencion(ctk.CTkToplevel):
     def __init__(self, master, SalidaSesion): # Agregamos 'master'
@@ -59,7 +59,7 @@ class VentanaPrincipal(ctk.CTk):
         self.btn_ventas = ctk.CTkButton(self.sidebar_frame, text="💰 Ventas", command=self.mostrar_ventas, fg_color="#28a745")
         self.btn_ventas.pack(pady=10, padx=20)
 
-        self.btn_cargar_productos = ctk.CTkButton(self.sidebar_frame, text="📈 Cargar Productos", command=self.cargar_productos, fg_color= "#0A98A0")
+        self.btn_cargar_productos = ctk.CTkButton(self.sidebar_frame, text="📈 Inventario", command=self.cargar_productos, fg_color= "#A00A7A")
         self.btn_cargar_productos.pack(pady=10, padx=20)
 
         self.btn_reportes = ctk.CTkButton(self.sidebar_frame, text="📊 Reportes", command=self.mostrar_reportes, fg_color="#456E54")
@@ -124,7 +124,7 @@ class VentanaPrincipal(ctk.CTk):
     def cargar_productos(self):
         print("Abriendo ventana de carga de productos...")
         self.limpiar_escenario() # Limpiamos el escenario antes de mostrar la ventana
-        ventana_carga = SeccionCargarProductos(master=self.home_frame) # Le pasamos el home_frame como master
+        ventana_carga = SeccionInventario(master=self.home_frame) # Le pasamos el home_frame como master
         ventana_carga.pack(fill="both", expand=True)
 
     def mostrar_reportes(self):

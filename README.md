@@ -20,3 +20,4 @@ Para ejecutar este proyecto, asegúrate de tener instalado Python 3.x y las sigu
 ```bash
 # Instalación de dependencias necesarias
 pip install customtkinter pandas openpyxl
+```
