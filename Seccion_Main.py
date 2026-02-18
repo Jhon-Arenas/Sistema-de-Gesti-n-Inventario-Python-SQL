@@ -6,10 +6,10 @@ print("Buscando conexión a la base de datos...")
 
 from Seccion_gestionusuarios import SeccionGestionUsuarios
 from Seccion_reportes import SeccionReportes
-from Seccion_reposicion import VentanaReposicionStock
 from Seccion_productos import SeccionProductos
 from Seccion_ventas import SeccionVentas
 from Seccion_cargarproductos import SeccionInventario
+from Seccion_pedidos import SeccionPedidos
 
 class VentanaSalidaSencion(ctk.CTkToplevel):
     def __init__(self, master, SalidaSesion): # Agregamos 'master'
@@ -36,6 +36,7 @@ class VentanaSalidaSencion(ctk.CTkToplevel):
 class VentanaPrincipal(ctk.CTk):
     def __init__(self, usuario, rol):
         super().__init__()
+
         # Guardamos en la "mochila" de la clase para que no se pierdan
         self.usuario = usuario
         self.rol = rol
@@ -59,6 +60,10 @@ class VentanaPrincipal(ctk.CTk):
         self.btn_ventas = ctk.CTkButton(self.sidebar_frame, text="💰 Ventas", command=self.mostrar_ventas, fg_color="#28a745")
         self.btn_ventas.pack(pady=10, padx=20)
 
+        # Agregamos el botón de Pedidos después de Ventas
+        self.btn_pedidos = ctk.CTkButton(self.sidebar_frame, text="📝 Pedidos", command=self.mostrar_pedidos, fg_color="#E67E22")
+        self.btn_pedidos.pack(pady=10, padx=20)
+
         self.btn_cargar_productos = ctk.CTkButton(self.sidebar_frame, text="📈 Inventario", command=self.cargar_productos, fg_color= "#A00A7A")
         self.btn_cargar_productos.pack(pady=10, padx=20)
 
@@ -79,6 +84,9 @@ class VentanaPrincipal(ctk.CTk):
         # 5. Aplicar permisos y mostrar bienvenida
         self.aplicar_permisos()
         self.mostrar_bienvenida()
+
+        # 6. Actualizar el contador de pedidos al entrar
+        self.actualizar_badge_pedidos()
 
     # --- FUNCIONES DE APOYO ---
     def limpiar_escenario(self):
@@ -114,6 +122,30 @@ class VentanaPrincipal(ctk.CTk):
         self.limpiar_escenario()
         nueva_vista = SeccionVentas(master=self.home_frame)
         nueva_vista.pack(fill="both", expand=True)
+
+    def mostrar_pedidos(self):
+        print("Abriendo sección de pedidos...")
+        self.limpiar_escenario()
+        # Instanciamos la clase que creamos en el otro archivo
+        ventana_pedidos = SeccionPedidos(master=self.home_frame)
+        ventana_pedidos.pack(fill="both", expand=True)
+
+    def actualizar_badge_pedidos(self):
+        try:
+            conexion = conectar_bd()
+            cursor = conexion.cursor()
+            # Contamos cuántos pedidos pendientes hay
+            cursor.execute("SELECT COUNT(*) FROM Pedidos WHERE estado = 'Pendiente'")
+            cantidad = cursor.fetchone()[0]
+            conexion.close()
+
+            # Si hay pedidos, mostramos el número. Si no, solo el texto normal.
+            if cantidad > 0:
+                self.btn_pedidos.configure(text=f"📝 Pedidos ({cantidad})")
+            else:
+                self.btn_pedidos.configure(text="📝 Pedidos")
+        except Exception as e:
+            print(f"Error al actualizar badge: {e}")
 
     def mostrar_productos(self):
         print("Abriendo ventana de productos...")
@@ -191,6 +223,64 @@ class VentanaLogin(ctk.CTk):
             conexion.close()
 
 # 2. EJECUCIÓN (Al final del archivo)
+# --- COLOCA LA FUNCIÓN AQUÍ (Fuera de las clases) ---
+def inicializar_base_datos():
+    try:
+        conexion = conectar_bd()
+        cursor = conexion.cursor()
+
+        # 1. Creamos la tabla de Usuarios
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Usuarios (
+                id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+                Nombre_Usuario TEXT NOT NULL,
+                Contraseña TEXT NOT NULL,
+                Rol TEXT NOT NULL
+            )
+        ''')
+
+        # 2. Tabla de Ventas (Para el Historial)
+        cursor.execute('''CREATE TABLE IF NOT EXISTS Ventas (
+                       ID_Venta INTEGER PRIMARY KEY AUTOINCREMENT,
+                       Nombre_Cliente TEXT,
+                       ID_Producto INTEGER,
+                       Cantidad_vendida INTEGER,
+                       Total REAL,
+                       Metodo_Pago TEXT,
+                       Fecha DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+
+        # 2. Tabla Productos (¡Añádela aquí!)
+        cursor.execute('''CREATE TABLE IF NOT EXISTS Productos (
+            ID_Producto INTEGER PRIMARY KEY AUTOINCREMENT,
+            Nombre TEXT NOT NULL, 
+            Stock INTEGER, 
+            Precio REAL)''')
+    
+        # 3. Tabla Pedidos (¡También aquí!)
+        cursor.execute('''CREATE TABLE IF NOT EXISTS Pedidos (
+            id_pedido INTEGER PRIMARY KEY AUTOINCREMENT,
+            cliente TEXT NOT NULL, producto TEXT NOT NULL,
+            cantidad INTEGER, estado TEXT NOT NULL)''')
+
+        # 2. Verificamos tu usuario
+        cursor.execute("SELECT * FROM Usuarios WHERE Nombre_Usuario = 'Jhon'")
+        if not cursor.fetchone():
+            cursor.execute('''
+                INSERT INTO Usuarios (Nombre_Usuario, Contraseña, Rol) 
+                VALUES (?, ?, ?)
+            ''', ('Jhon', '1234', 'Administrador'))
+            print("✅ Base de datos nueva: Usuario 'Jhon' creado.")
+
+        conexion.commit()
+        conexion.close()
+    except Exception as e:
+        print(f"Error al inicializar: {e}")
+
+# --- EL BLOQUE FINAL DE EJECUCIÓN ---
 if __name__ == "__main__":
+    # 1. Primero preparamos el terreno (Base de datos)
+    inicializar_base_datos() 
+    
+    # 2. Luego abrimos la puerta (Login)
     login = VentanaLogin()
     login.mainloop()
