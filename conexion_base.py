@@ -1,16 +1,21 @@
-import os
 import sqlite3
+import os
+import sys
 
 def conectar_bd():
+    # Esta línea detecta si estamos ejecutando el código o el .exe
+    if getattr(sys, 'frozen', False):
+        # Si es el .exe, busca en la carpeta del ejecutable
+        ruta_base = os.path.dirname(sys.executable)
+    else:
+        # Si es código normal, busca en la carpeta del script
+        ruta_base = os.path.dirname(os.path.abspath(__file__))
+    
+    ruta_db = os.path.join(ruta_base, "inventario.db")
+    
     try:
-        # 1. Obtenemos la ruta absoluta de la carpeta donde vive el archivo
-        # Esto evita que la base de datos se guarde en carpetas temporales raras
-        directorio_actual = os.path.dirname(os.path.abspath(__file__))
-        ruta_db = os.path.join(directorio_actual, "inventario.db")
-        
-        # 2. Conectamos usando la ruta completa
         conexion = sqlite3.connect(ruta_db)
         return conexion
     except Exception as e:
-        print(f"❌ Error crítico al conectar con la base de datos: {e}")
+        print(f"Error conectando a la base: {e}")
         return None

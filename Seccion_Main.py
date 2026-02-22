@@ -223,53 +223,66 @@ class VentanaLogin(ctk.CTk):
             conexion.close()
 
 # 2. EJECUCIÓN (Al final del archivo)
-# --- COLOCA LA FUNCIÓN AQUÍ (Fuera de las clases) ---
 def inicializar_base_datos():
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor()
 
-        # 1. Creamos la tabla de Usuarios
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Usuarios (
-                id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
-                Nombre_Usuario TEXT NOT NULL,
-                Contraseña TEXT NOT NULL,
-                Rol TEXT NOT NULL
-            )
-        ''')
+        # 1. Tabla Usuarios (Se mantiene igual)
+        cursor.execute('''CREATE TABLE IF NOT EXISTS Usuarios (
+            id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+            Nombre_Usuario TEXT NOT NULL,
+            Contraseña TEXT NOT NULL,
+            Rol TEXT NOT NULL)''')
 
-        # 2. Tabla de Ventas (Para el Historial)
+        # 2. Tabla Ventas (Cabecera del Ticket)
+        # 2. Tabla Ventas (Cabecera del Ticket) - CORREGIDA
         cursor.execute('''CREATE TABLE IF NOT EXISTS Ventas (
-                       ID_Venta INTEGER PRIMARY KEY AUTOINCREMENT,
-                       Nombre_Cliente TEXT,
-                       ID_Producto INTEGER,
-                       Cantidad_vendida INTEGER,
-                       Total REAL,
-                       Metodo_Pago TEXT,
-                       Fecha DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+            id_venta INTEGER PRIMARY KEY AUTOINCREMENT,
+            id_usuario INTEGER,
+            Total_Venta REAL,
+            Fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+            Nombre_Cliente TEXT,
+            Metodo_Pago TEXT,
+            FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario))''')
 
-        # 2. Tabla Productos (¡Añádela aquí!)
+        # 3. NUEVA: Tabla Detalle_Ventas (Los productos del carrito)
+        # Aquí es donde se guarda cada renglón de lo que compró el cliente
+        cursor.execute('''CREATE TABLE IF NOT EXISTS Detalle_Ventas (
+            id_detalle INTEGER PRIMARY KEY AUTOINCREMENT,
+            id_venta INTEGER,
+            id_producto INTEGER,
+            Nombre_Producto TEXT,
+            Cantidad INTEGER,
+            Precio_Unitario REAL,
+            Subtotal REAL,
+            FOREIGN KEY (id_venta) REFERENCES Ventas(id_venta),
+            FOREIGN KEY (id_producto) REFERENCES Productos(ID_Producto))''')
+
+        # 4. Tabla Productos (Se mantiene igual)
         cursor.execute('''CREATE TABLE IF NOT EXISTS Productos (
             ID_Producto INTEGER PRIMARY KEY AUTOINCREMENT,
             Nombre TEXT NOT NULL, 
             Stock INTEGER, 
             Precio REAL)''')
     
-        # 3. Tabla Pedidos (¡También aquí!)
+        # 5. Tabla Pedidos (Se mantiene igual)
         cursor.execute('''CREATE TABLE IF NOT EXISTS Pedidos (
             id_pedido INTEGER PRIMARY KEY AUTOINCREMENT,
             cliente TEXT NOT NULL, producto TEXT NOT NULL,
             cantidad INTEGER, estado TEXT NOT NULL)''')
 
-        # 2. Verificamos tu usuario
-        cursor.execute("SELECT * FROM Usuarios WHERE Nombre_Usuario = 'Jhon'")
-        if not cursor.fetchone():
-            cursor.execute('''
-                INSERT INTO Usuarios (Nombre_Usuario, Contraseña, Rol) 
-                VALUES (?, ?, ?)
-            ''', ('Jhon', '1234', 'Administrador'))
-            print("✅ Base de datos nueva: Usuario 'Jhon' creado.")
+        #creamos a los nuevos usuarios
+        cursor.execute("SELECT COUNT(*) FROM Usuarios")
+        if cursor.fetchone()[0] == 0:  # Si la tabla está vacía...
+            # Insertamos a Jhon
+            cursor.execute("INSERT INTO Usuarios (Nombre_Usuario, Contraseña, Rol) VALUES (?, ?, ?)", 
+                           ('Jhon', '1234', 'Administrador'))
+            # Insertamos a Angela
+            cursor.execute("INSERT INTO Usuarios (Nombre_Usuario, Contraseña, Rol) VALUES (?, ?, ?)", 
+                           ('Angela', '0000', 'Administrador'))
+            print("✅ Usuarios administradores creados con éxito.")
+            print("✅ Base de datos inicializada con nuevas tablas de ventas.")
 
         conexion.commit()
         conexion.close()

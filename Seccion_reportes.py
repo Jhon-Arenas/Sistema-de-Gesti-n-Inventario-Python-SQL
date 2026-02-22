@@ -9,67 +9,88 @@ class SeccionReportes(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
         
-        # 1. Título y Tarjetas
-        self.titulo = ctk.CTkLabel(self, text="📊 Reportes y Estadísticas", font=("Roboto", 24, "bold"))
-        self.titulo.pack(pady=20)
+        # 1. TÍTULO
+        self.label_titulo = ctk.CTkLabel(self, text="📊 Panel de Reportes y Estadísticas", font=("Roboto", 24, "bold"))
+        self.label_titulo.pack(pady=20)
 
-        self.cards_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.cards_frame.pack(fill="x", padx=20, pady=10)
-        self.generar_reporte_resumen()
+        # 2. TARJETAS DE INDICADORES (KPIs)
+        self.frame_cards = ctk.CTkFrame(self, fg_color="transparent")
+        self.frame_cards.pack(fill="x", padx=20, pady=10)
 
-        # 2. Botón de Configuración de Filtros
-        self.btn_config_filtros = ctk.CTkButton(
-            self, text="🔍 Filtros Avanzados", 
-            command=self.toggle_filtros,
-            fg_color="#34495e"
-        )
-        self.btn_config_filtros.pack(pady=10)
+        # Tarjeta: Ventas Totales
+        self.card_total = ctk.CTkFrame(self.frame_cards, corner_radius=15)
+        self.card_total.pack(side="left", padx=10, expand=True, fill="both")
+        ctk.CTkLabel(self.card_total, text="Ventas Totales", font=("Roboto", 14)).pack(pady=(10,0))
+        self.lbl_dinero = ctk.CTkLabel(self.card_total, text="$ 0.00", font=("Roboto", 22, "bold"), text_color="#28a745")
+        self.lbl_dinero.pack(pady=10)
 
-        # 3. Panel de Filtros (Oculto)
-        self.frame_filtros = ctk.CTkFrame(self, fg_color="gray25", corner_radius=10)
-        self.entry_cliente = ctk.CTkEntry(self.frame_filtros, placeholder_text="Nombre del cliente...")
-        self.entry_cliente.pack(side="left", padx=10, pady=10)
-        self.entry_fecha = ctk.CTkEntry(self.frame_filtros, placeholder_text="AAAA-MM-DD")
-        self.entry_fecha.pack(side="left", padx=10, pady=10)
-        
-        self.filtros_visibles = False 
+        # Tarjeta: Producto Estrella
+        self.card_top = ctk.CTkFrame(self.frame_cards, corner_radius=15)
+        self.card_top.pack(side="left", padx=10, expand=True, fill="both")
+        ctk.CTkLabel(self.card_top, text="Producto Estrella", font=("Roboto", 14)).pack(pady=(10,0))
+        self.lbl_producto = ctk.CTkLabel(self.card_top, text="---", font=("Roboto", 18, "bold"), text_color="#E67E22")
+        self.lbl_producto.pack(pady=10)
 
-        # 4. ÚNICO Botón de Exportar
-        self.btn_exportar = ctk.CTkButton(
-            self, text="📥 Exportar a Excel", 
-            command=self.exportar_a_excel,
-            fg_color="#1f538d",
-            hover_color="#14375e"
-        )
-        self.btn_exportar.pack(pady=30)
+        # 3. BARRA DE HERRAMIENTAS (Filtros y Acciones)
+        self.frame_tools = ctk.CTkFrame(self, fg_color="transparent")
+        self.frame_tools.pack(pady=20, padx=20, fill="x")
 
-    def generar_reporte_resumen(self):
+        self.entry_cliente = ctk.CTkEntry(self.frame_tools, placeholder_text="Filtrar por Cliente", width=200)
+        self.entry_cliente.pack(side="left", padx=5)
+
+        self.entry_fecha = ctk.CTkEntry(self.frame_tools, placeholder_text="Fecha (AAAA-MM-DD)", width=150)
+        self.entry_fecha.pack(side="left", padx=5)
+
+        self.btn_generar = ctk.CTkButton(self.frame_tools, text="🔄 Actualizar", width=100, command=self.generar_reporte)
+        self.btn_generar.pack(side="left", padx=5)
+
+        self.btn_excel = ctk.CTkButton(self.frame_tools, text="📊 Exportar Excel", fg_color="#1D6F42", 
+                                        hover_color="#145A32", command=self.exportar_a_excel)
+        self.btn_excel.pack(side="right", padx=5)
+
+        # 4. LISTADO DE MOVIMIENTOS RECIENTES
+        ctk.CTkLabel(self, text="Últimos Movimientos", font=("Roboto", 16, "bold")).pack(pady=5)
+        self.scroll_reporte = ctk.CTkScrollableFrame(self, height=300)
+        self.scroll_reporte.pack(pady=10, padx=20, fill="both", expand=True)
+
+        # Cargar datos iniciales
+        self.generar_reporte()
+
+    def generar_reporte(self):
+        for widget in self.scroll_reporte.winfo_children():
+            widget.destroy()
+
         try:
             conexion = conectar_bd()
             cursor = conexion.cursor()
-            cursor.execute("SELECT SUM(Cantidad_Vendida) FROM Ventas")
-            total_unidades = cursor.fetchone()[0] or 0
-            self.crear_tarjeta("Unidades Vendidas", str(total_unidades), "#2ecc71")
+
+            # Suma total
+            cursor.execute("SELECT SUM(Total_Venta) FROM Ventas")
+            total = cursor.fetchone()[0] or 0
+            self.lbl_dinero.configure(text=f"$ {total:,.2f}")
+
+            # Top Producto
+            cursor.execute("""
+                SELECT Nombre_Producto, SUM(Cantidad) as total_cant 
+                FROM Detalle_Ventas 
+                GROUP BY id_producto 
+                ORDER BY total_cant DESC LIMIT 1
+            """)
+            top = cursor.fetchone()
+            if top:
+                self.lbl_producto.configure(text=f"{top[0]} ({top[1]})")
+
+            # Lista detallada
+            cursor.execute("SELECT ID_Venta, Fecha, Nombre_Cliente, Total_Venta FROM Ventas ORDER BY Fecha DESC")
+            for v in cursor.fetchall():
+                fila = ctk.CTkFrame(self.scroll_reporte)
+                fila.pack(fill="x", pady=2, padx=5)
+                texto = f"ID: {v[0]} | 📅 {v[1][:16]} | 👤 {v[2]} | 💰 ${v[3]:.2f}"
+                ctk.CTkLabel(fila, text=texto).pack(side="left", padx=10)
+
             conexion.close()
         except Exception as e:
-            print(f"Error en reporte: {e}")
-
-    def crear_tarjeta(self, titulo, valor, color):
-        card = ctk.CTkFrame(self.cards_frame, width=200, height=100, border_width=2, border_color=color)
-        card.pack(side="left", padx=10, pady=10)
-        ctk.CTkLabel(card, text=titulo, font=("Roboto", 12)).pack(pady=5)
-        ctk.CTkLabel(card, text=valor, font=("Roboto", 20, "bold"), text_color=color).pack(pady=5)
-        # AQUÍ HABÍA UN BOTÓN EXTRA, ¡LO ELIMINAMOS!
-
-    def toggle_filtros(self):
-        if not self.filtros_visibles:
-            self.frame_filtros.pack(fill="x", padx=20, pady=10, after=self.btn_config_filtros)
-            self.btn_config_filtros.configure(text="🔼 Cerrar Filtros")
-            self.filtros_visibles = True
-        else:
-            self.frame_filtros.pack_forget()
-            self.btn_config_filtros.configure(text="🔍 Filtros Avanzados")
-            self.filtros_visibles = False
+            messagebox.showerror("Error", f"Error al cargar datos: {e}")
 
     def exportar_a_excel(self):
         try:
@@ -80,35 +101,22 @@ class SeccionReportes(ctk.CTkFrame):
             nombre_buscado = self.entry_cliente.get()
             fecha_buscada = self.entry_fecha.get()
 
-            # Filtramos por nombre si hay texto
             if nombre_buscado:
                 df = df[df['Nombre_Cliente'].str.contains(nombre_buscado, case=False, na=False)]
-                
-            # Filtramos por fecha si hay texto
             if fecha_buscada:
                 df = df[df['Fecha'].str.contains(fecha_buscada, na=False)]
 
-            # Si el resultado está vacío, avisamos y salimos
             if df.empty:
-                messagebox.showwarning("Aviso", "No se encontraron datos con esos filtros.")
+                messagebox.showwarning("Aviso", "No hay datos para exportar con esos filtros.")
                 return
             
-            # Preparamos el nombre con la fecha actual
-            fecha_sugerida = datetime.now().strftime("%Y-%m-%d_%H-%M")
-            nombre_sugerido = f"Reporte_{fecha_sugerida}.xlsx"
+            nombre_sugerido = f"Reporte_{datetime.now().strftime('%Y-%m-%d_%H-%M')}.xlsx"
+            ruta_archivo = filedialog.asksaveasfilename(defaultextension=".xlsx",
+                filetypes=[("Excel files", "*.xlsx")], initialfile=nombre_sugerido)
 
-            # Abrimos la ventana de "Guardar como"
-            ruta_archivo = filedialog.asksaveasfilename(
-                defaultextension=".xlsx",
-                filetypes=[("Excel files", "*.xlsx"), ("Todos los archivos", "*.*")],
-                initialfile=nombre_sugerido,
-                title="Selecciona dónde guardar tu reporte"
-            )
-
-            # Solo si el usuario eligió una ruta (no canceló), guardamos
             if ruta_archivo:
                 df.to_excel(ruta_archivo, index=False)
-                messagebox.showinfo("Éxito", f"Reporte guardado en:\n{ruta_archivo}")
+                messagebox.showinfo("Éxito", "¡Reporte Excel generado correctamente!")
 
         except Exception as e:
-            messagebox.showerror("Error", f"Error en Pandas: {e}")
+            messagebox.showerror("Error", f"Fallo al exportar: {e}")

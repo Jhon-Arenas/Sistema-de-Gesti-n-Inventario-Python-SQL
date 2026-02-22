@@ -45,16 +45,6 @@ class SeccionPedidos (ctk.CTkFrame):
         )
         self.entry_cantidad.pack(side="left", padx=10, pady=20)
 
-        # Botón para Registrar
-        self.btn_registrar = ctk.CTkButton(
-            self, 
-            text="➕ Registrar Pedido", 
-            command=self.registrar_pedido, # <--- Llamará a la función que haremos
-            fg_color="#27ae60", 
-            hover_color="#2ecc71"
-        )
-        self.btn_registrar.pack(pady=20)
-
         # --- CABECERA DE LA TABLA ---
         self.frame_header = ctk.CTkFrame(self, fg_color="#333333", corner_radius=5)
         self.frame_header.pack(fill="x", padx=40, pady=(10, 0))
